@@ -24,5 +24,6 @@ namespace RuntimeGizmos
         public Axis selectedAxis;
         public Vector3 projectedAxis;
         public float distanceMultiplier;
+        public TransformSpace space;
     }
 }

@@ -38,7 +38,7 @@ namespace RuntimeGizmos
             float scaleAmount = ExtVector3.MagnitudeInDirection(mouseMovement, projected) * scaleSpeedMultiplier;
 
             //WARNING - There is a bug in unity 5.4 and 5.5 that causes InverseTransformDirection to be affected by scale which will break negative scaling. Not tested, but updating to 5.4.2 should fix it - https://issuetracker.unity3d.com/issues/transformdirection-and-inversetransformdirection-operations-are-affected-by-scale
-            Vector3 localAxis = (/*space == TransformSpace.Local&&*/ data.selectedAxis != Axis.Any) ? target.InverseTransformDirection(data.axisDirection) : data.axisDirection;
+            Vector3 localAxis = (data.space == TransformSpace.Local && data.selectedAxis != Axis.Any) ? target.InverseTransformDirection(data.axisDirection) : data.axisDirection;
 
             if (data.selectedAxis == Axis.Any) target.localScale += (ExtVector3.Abs(target.localScale.normalized) * scaleAmount);
             else target.localScale += (localAxis * scaleAmount);

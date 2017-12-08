@@ -19,6 +19,7 @@ namespace RuntimeGizmos
         void SetHandleTriangles(AxisInfo axisInfo, float distanceMultiplier);
         void SetHandleSquares(Transform target, AxisInfo axisInfo, float distanceMultiplier);
         void SetCircles(Transform target, AxisInfo axisInfo, float distanceMultiplier);
+        void SetSelectionCircles(Transform target, Quaternion totalRotationAmount, float distanceMultiplier);
     }
 
     public class DrawingShapes : DrawingShapesHandler, BuildingShapes
@@ -117,21 +118,10 @@ namespace RuntimeGizmos
             DrawSquares(handleSquares.z, zColor);
             DrawSquares(handleSquares.all, allColor);
 
-            AxisVectors rotationAxisVector = circlesLines;/*
-            if (isTransforming && space == TransformSpace.Global && type == TransformType.Rotate) {
-                rotationAxisVector = drawCurrentCirclesLines;
-
-                AxisInfo axisInfo = new AxisInfo();
-                axisInfo.xDirection = totalRotationAmount * Vector3.right;
-                axisInfo.yDirection = totalRotationAmount * Vector3.up;
-                axisInfo.zDirection = totalRotationAmount * Vector3.forward;
-                SetCircles(axisInfo, drawCurrentCirclesLines);
-            }*/
-
-            DrawCircles(rotationAxisVector.x, xColor);
-            DrawCircles(rotationAxisVector.y, yColor);
-            DrawCircles(rotationAxisVector.z, zColor);
-            DrawCircles(rotationAxisVector.all, allColor);
+            DrawCircles(circlesLines.x, xColor);
+            DrawCircles(circlesLines.y, yColor);
+            DrawCircles(circlesLines.z, zColor);
+            DrawCircles(circlesLines.all, allColor);
         }
 
         public void Clear()
@@ -231,6 +221,18 @@ namespace RuntimeGizmos
             AddCircle(target.position, axisInfo.yDirection, circleLength, circlesLines.y);
             AddCircle(target.position, axisInfo.zDirection, circleLength, circlesLines.z);
             AddCircle(target.position, (target.position - transform.position).normalized, circleLength, circlesLines.all, false);
+        }
+
+        public void SetSelectionCircles(Transform target, Quaternion totalRotationAmount, float distanceMultiplier)
+        {
+            AxisVectors rotationAxisVector = circlesLines;
+            rotationAxisVector = drawCurrentCirclesLines;
+
+            AxisInfo axisInfo = new AxisInfo();
+            axisInfo.xDirection = totalRotationAmount * Vector3.right;
+            axisInfo.yDirection = totalRotationAmount * Vector3.up;
+            axisInfo.zDirection = totalRotationAmount * Vector3.forward;
+            SetCircles(target, axisInfo, distanceMultiplier);
         }
 
         private void AddCircle(Vector3 origin, Vector3 axisDirection, float size, List<Vector3> resultsBuffer, bool depthTest = true)

@@ -20,7 +20,6 @@ namespace RuntimeGizmos
 
         private TransformMoving movingState;
         private TransformRotating rotatingState;
-        private TransformRotatingAll rotatingAllState;
         private TransformScaling scalingState;
         private TransformTypeHandler currentState;
 
@@ -34,8 +33,7 @@ namespace RuntimeGizmos
         void Awake()
         {
             movingState = new TransformMoving();
-            rotatingState = new TransformRotating();
-            rotatingAllState = new TransformRotatingAll(transform);
+            rotatingState = new TransformRotating(transform);
             scalingState = new TransformScaling(transform);
             currentState = movingState;
             myCamera = GetComponent<Camera>();
@@ -79,16 +77,11 @@ namespace RuntimeGizmos
             if (Input.GetKeyDown(SetMoveKey)) {
                 currentState = movingState;
             } else if (Input.GetKeyDown(SetRotateKey)) {
-                currentState = space == TransformSpace.Global ? (TransformTypeHandler) rotatingAllState : (TransformTypeHandler) rotatingState;
+                currentState = rotatingState;
             } else if (Input.GetKeyDown(SetScaleKey)) {
                 currentState = scalingState;
             } else if (Input.GetKeyDown(SetSpaceToggle)) {
                 space = space == TransformSpace.Global ? TransformSpace.Local : TransformSpace.Local;
-                if (currentState == rotatingAllState) {
-                    currentState = rotatingState;
-                } else if (currentState == rotatingState) {
-                    currentState = rotatingAllState;
-                }
             }
 
             if (currentState != currentHandler) {
@@ -116,11 +109,14 @@ namespace RuntimeGizmos
                 selectedAxis = selectedAxis,
                 axisDirection = axisDirection,
 				projectedAxis = Vector3.ProjectOnPlane(axisDirection, planeNormal).normalized,
-				distanceMultiplier = GetDistanceMultiplier()
+				distanceMultiplier = GetDistanceMultiplier(),
+                space = space
 			};
 			Vector3 previousMousePosition = Vector3.zero;
 
             currentState.OnBeginTransforming(data);
+
+            Debug.Log(selectedAxis);
 
 			while(!Input.GetMouseButtonUp(0))
 			{
@@ -184,37 +180,20 @@ namespace RuntimeGizmos
             yClosestDistance = ClosestDistanceFromMouseToLines(selectedLinesBuffer.y);
             zClosestDistance = ClosestDistanceFromMouseToLines(selectedLinesBuffer.z);
             allClosestDistance = ClosestDistanceFromMouseToLines(selectedLinesBuffer.all);
-            /*
-			if(type == TransformType.Move || type == TransformType.Scale)
-			{
-				selectedLinesBuffer.Clear();
-				selectedLinesBuffer.Add(handleLines);
-				if(type == TransformType.Move) selectedLinesBuffer.Add(handleTriangles);
-				else if(type == TransformType.Scale) selectedLinesBuffer.Add(handleSquares);
 
-				xClosestDistance = ClosestDistanceFromMouseToLines(selectedLinesBuffer.x);
-				yClosestDistance = ClosestDistanceFromMouseToLines(selectedLinesBuffer.y);
-				zClosestDistance = ClosestDistanceFromMouseToLines(selectedLinesBuffer.z);
-				allClosestDistance = ClosestDistanceFromMouseToLines(selectedLinesBuffer.all);
-			}
-			else if(type == TransformType.Rotate)
-			{
-				xClosestDistance = ClosestDistanceFromMouseToLines(circlesLines.x);
-				yClosestDistance = ClosestDistanceFromMouseToLines(circlesLines.y);
-				zClosestDistance = ClosestDistanceFromMouseToLines(circlesLines.z);
-				allClosestDistance = ClosestDistanceFromMouseToLines(circlesLines.all);
-			}*/
-
-            if (currentState.type == TransformType.Scale && allClosestDistance <= minSelectedDistanceCheck) selectedAxis = Axis.Any;
-			else if(xClosestDistance <= minSelectedDistanceCheck && xClosestDistance <= yClosestDistance && xClosestDistance <= zClosestDistance) selectedAxis = Axis.X;
-			else if(yClosestDistance <= minSelectedDistanceCheck && yClosestDistance <= xClosestDistance && yClosestDistance <= zClosestDistance) selectedAxis = Axis.Y;
-			else if(zClosestDistance <= minSelectedDistanceCheck && zClosestDistance <= xClosestDistance && zClosestDistance <= yClosestDistance) selectedAxis = Axis.Z;
-			else if(currentState.type == TransformType.Rotate && target != null)
-			{
-				Ray mouseRay = myCamera.ScreenPointToRay(Input.mousePosition);
-				Vector3 mousePlaneHit = Geometry.LinePlaneIntersect(mouseRay.origin, mouseRay.direction, target.position, (transform.position - target.position).normalized);
-				if((target.position - mousePlaneHit).sqrMagnitude <= (drawingShapes.handleLength * GetDistanceMultiplier()).Squared()) selectedAxis = Axis.Any;
-			}
+            if (currentState.type == TransformType.Scale && allClosestDistance <= minSelectedDistanceCheck) {
+                selectedAxis = Axis.Any;
+            } else if (xClosestDistance <= minSelectedDistanceCheck && xClosestDistance <= yClosestDistance && xClosestDistance <= zClosestDistance) {
+                selectedAxis = Axis.X;
+            } else if (yClosestDistance <= minSelectedDistanceCheck && yClosestDistance <= xClosestDistance && yClosestDistance <= zClosestDistance) {
+                selectedAxis = Axis.Y;
+            } else if (zClosestDistance <= minSelectedDistanceCheck && zClosestDistance <= xClosestDistance && zClosestDistance <= yClosestDistance) {
+                selectedAxis = Axis.Z;
+            } else if (currentState.type == TransformType.Rotate && target != null) {
+                Ray mouseRay = myCamera.ScreenPointToRay(Input.mousePosition);
+                Vector3 mousePlaneHit = Geometry.LinePlaneIntersect(mouseRay.origin, mouseRay.direction, target.position, (transform.position - target.position).normalized);
+                if ((target.position - mousePlaneHit).sqrMagnitude <= (drawingShapes.handleLength * GetDistanceMultiplier()).Squared()) selectedAxis = Axis.Any;
+            }
 		}
 
 		float ClosestDistanceFromMouseToLines(List<Vector3> lines)
