@@ -11,7 +11,6 @@ namespace RuntimeGizmos
         float rotateSpeedMultiplier = 200f;
         float allRotateSpeedMultiplier = 20f;
         Quaternion totalRotationAmount = Quaternion.identity;
-        TransformData data;
         Transform transform;
         Transform target;
         public TransformType type { get { return TransformType.Rotate; } }
@@ -26,13 +25,12 @@ namespace RuntimeGizmos
             this.target = target;
         }
 
-        public void OnBeginTransforming(TransformData data)
+        public void OnBeginTransforming()
         {
             totalRotationAmount = Quaternion.identity;
-            this.data = data;
         }
 
-        public void Transforming(Vector3 mouseMovement)
+        public void Transforming(Vector3 mouseMovement, TransformData data)
         {
             if (data.selectedAxis == Axis.Any) {
                 Vector3 rotation = transform.TransformDirection(new Vector3(Input.GetAxis("Mouse Y"), -Input.GetAxis("Mouse X"), 0));
@@ -46,16 +44,16 @@ namespace RuntimeGizmos
             }
         }
 
-        public void LateTransforming(AxisInfo axisInfo)
+        public void LateTransforming(AxisInfo axisInfo, Axis selectedAxis)
         {
         }
 
-        public void SetShapesToDraw(AxisInfo axisInfo, BuildingShapes buildingShapes)
+        public void SetShapesToDraw(AxisInfo axisInfo, BuildingShapes buildingShapes, TransformSpace space, float distanceMultiplier)
         {
-            if (data.space == TransformSpace.Global) {
-                buildingShapes.SetSelectionCircles(target, totalRotationAmount, data.distanceMultiplier);
+            if (space == TransformSpace.Global) {
+                buildingShapes.SetSelectionCircles(target, totalRotationAmount, distanceMultiplier);
             } else {
-                buildingShapes.SetCircles(target, axisInfo, data.distanceMultiplier);
+                buildingShapes.SetCircles(target, axisInfo, distanceMultiplier);
             }
         }
     }

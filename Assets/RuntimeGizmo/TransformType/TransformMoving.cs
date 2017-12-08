@@ -11,7 +11,6 @@ namespace RuntimeGizmos
         float moveSpeedMultiplier = 1f;
 
         Transform target;
-        TransformData data;
 
         public TransformType type { get { return TransformType.Move; } }
 
@@ -20,25 +19,24 @@ namespace RuntimeGizmos
             this.target = target;
         }
 
-        public void OnBeginTransforming(TransformData data)
+        public void OnBeginTransforming()
         {
-            this.data = data;
         }
 
-        public void Transforming(Vector3 mouseMovement)
+        public void Transforming(Vector3 mouseMovement, TransformData data)
         {
             float moveAmount = ExtVector3.MagnitudeInDirection(mouseMovement, data.projectedAxis) * moveSpeedMultiplier;
             target.Translate(data.axisDirection * moveAmount, Space.World);
         }
 
-        public void LateTransforming(AxisInfo axisInfo)
+        public void LateTransforming(AxisInfo axisInfo, Axis selectedAxis)
         {
         }
 
-        public void SetShapesToDraw(AxisInfo axisInfo, BuildingShapes buildingShapes)
+        public void SetShapesToDraw(AxisInfo axisInfo, BuildingShapes buildingShapes, TransformSpace space, float distanceMultiplier)
         {
             buildingShapes.SetHandleLines(target, axisInfo);
-            buildingShapes.SetHandleTriangles(axisInfo, data.distanceMultiplier);
+            buildingShapes.SetHandleTriangles(axisInfo, distanceMultiplier);
         }
     }
 }

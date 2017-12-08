@@ -58,10 +58,10 @@ namespace RuntimeGizmos
             //We run this in lateupdate since coroutines run after update and we want our gizmos to have the updated target transform position after TransformSelected()
             ComputeAxisInfo();
             if (isTransforming) {
-                currentState.LateTransforming(axisInfo);
+                currentState.LateTransforming(axisInfo, selectedAxis);
             }
             drawingShapes.Clear();
-            currentState.SetShapesToDraw(axisInfo, drawingShapes);
+            currentState.SetShapesToDraw(axisInfo, drawingShapes, space, GetDistanceMultiplier());
         }
 
         void OnPostRender()
@@ -74,6 +74,7 @@ namespace RuntimeGizmos
         void HandleKeysForSpaceAndType()
         {
             TransformTypeHandler currentHandler = currentState;
+
             if (Input.GetKeyDown(SetMoveKey)) {
                 currentState = movingState;
             } else if (Input.GetKeyDown(SetRotateKey)) {
@@ -109,14 +110,11 @@ namespace RuntimeGizmos
                 selectedAxis = selectedAxis,
                 axisDirection = axisDirection,
 				projectedAxis = Vector3.ProjectOnPlane(axisDirection, planeNormal).normalized,
-				distanceMultiplier = GetDistanceMultiplier(),
-                space = space
+                distanceMultiplier = GetDistanceMultiplier()
 			};
 			Vector3 previousMousePosition = Vector3.zero;
 
-            currentState.OnBeginTransforming(data);
-
-            Debug.Log(selectedAxis);
+            currentState.OnBeginTransforming();
 
 			while(!Input.GetMouseButtonUp(0))
 			{
@@ -126,7 +124,7 @@ namespace RuntimeGizmos
 				if (previousMousePosition != Vector3.zero && mousePosition != Vector3.zero)
 				{
 					Vector3 mousePositionMovement = mousePosition - previousMousePosition;
-                    currentState.Transforming(mousePositionMovement);
+                    currentState.Transforming(mousePositionMovement, data);
 				}
 
 				previousMousePosition = mousePosition;
@@ -137,17 +135,16 @@ namespace RuntimeGizmos
 			isTransforming = false;
 		}
 
-		Vector3 GetSelectedAxisDirection(AxisInfo axisInfo)
-		{
-			if(selectedAxis != Axis.None)
-			{
-				if(selectedAxis == Axis.X) return axisInfo.xDirection;
-				if(selectedAxis == Axis.Y) return axisInfo.yDirection;
-				if(selectedAxis == Axis.Z) return axisInfo.zDirection;
-				if(selectedAxis == Axis.Any) return Vector3.one;
-			}
-			return Vector3.zero;
-		}
+        Vector3 GetSelectedAxisDirection(AxisInfo axisInfo)
+        {
+            switch(selectedAxis) {
+                case Axis.X: return axisInfo.xDirection;
+                case Axis.Y: return axisInfo.yDirection;
+                case Axis.Z: return axisInfo.zDirection;
+                case Axis.Any: return Vector3.one;
+                default: return Vector3.zero;
+            }
+        }
 	
 		void UpdateSelectedTarget()
 		{

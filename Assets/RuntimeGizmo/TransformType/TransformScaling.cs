@@ -18,7 +18,6 @@ namespace RuntimeGizmos
 
         float scaleSpeedMultiplier = 1.0f;
         float totalScaleAmount = 0;
-        TransformData data;
         Transform target;
 
         public void SetTarget(Transform target)
@@ -26,13 +25,12 @@ namespace RuntimeGizmos
             this.target = target;
         }
 
-        public void OnBeginTransforming(TransformData data)
+        public void OnBeginTransforming()
         {
-            this.data = data;
             this.totalScaleAmount = 0;
         }
 
-        public void Transforming(Vector3 mouseMovement)
+        public void Transforming(Vector3 mouseMovement, TransformData data)
         {
             Vector3 projected = (data.selectedAxis == Axis.Any) ? transform.right : data.projectedAxis;
             float scaleAmount = ExtVector3.MagnitudeInDirection(mouseMovement, projected) * scaleSpeedMultiplier;
@@ -46,17 +44,17 @@ namespace RuntimeGizmos
             totalScaleAmount += scaleAmount;
         }
 
-        public void LateTransforming(AxisInfo axisInfo)
+        public void LateTransforming(AxisInfo axisInfo, Axis selectedAxis)
         {
-            if (data.selectedAxis == Axis.X || data.selectedAxis == Axis.Any) axisInfo.xAxisEnd += (axisInfo.xDirection * totalScaleAmount);
-            if (data.selectedAxis == Axis.Y || data.selectedAxis == Axis.Any) axisInfo.yAxisEnd += (axisInfo.yDirection * totalScaleAmount);
-            if (data.selectedAxis == Axis.Z || data.selectedAxis == Axis.Any) axisInfo.zAxisEnd += (axisInfo.zDirection * totalScaleAmount);
+            if (selectedAxis == Axis.X || selectedAxis == Axis.Any) axisInfo.xAxisEnd += (axisInfo.xDirection * totalScaleAmount);
+            if (selectedAxis == Axis.Y || selectedAxis == Axis.Any) axisInfo.yAxisEnd += (axisInfo.yDirection * totalScaleAmount);
+            if (selectedAxis == Axis.Z || selectedAxis == Axis.Any) axisInfo.zAxisEnd += (axisInfo.zDirection * totalScaleAmount);
         }
 
-        public void SetShapesToDraw(AxisInfo axisInfo, BuildingShapes buildingShapes)
+        public void SetShapesToDraw(AxisInfo axisInfo, BuildingShapes buildingShapes, TransformSpace space, float distanceMultiplier)
         {
             buildingShapes.SetHandleLines(target, axisInfo);
-            buildingShapes.SetHandleSquares(target, axisInfo, data.distanceMultiplier);
+            buildingShapes.SetHandleSquares(target, axisInfo, distanceMultiplier);
         }
     }
 }

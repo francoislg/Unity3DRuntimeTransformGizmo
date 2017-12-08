@@ -10,10 +10,10 @@ namespace RuntimeGizmos
     {
         TransformType type { get; }
         void SetTarget(Transform target);
-        void OnBeginTransforming(TransformData data);
-        void Transforming(Vector3 mouseMovement);
-        void LateTransforming(AxisInfo axisInfo);
-        void SetShapesToDraw(AxisInfo axisInfo, BuildingShapes buildingShapes);
+        void OnBeginTransforming();
+        void Transforming(Vector3 mouseMovement, TransformData data);
+        void LateTransforming(AxisInfo axisInfo, Axis selectedAxis);
+        void SetShapesToDraw(AxisInfo axisInfo, BuildingShapes buildingShapes, TransformSpace space, float distanceMultiplier);
     }
 
     public struct TransformData
